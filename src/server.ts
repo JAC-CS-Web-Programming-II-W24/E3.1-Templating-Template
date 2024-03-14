@@ -13,9 +13,9 @@ const port = 3000;
  */
 const serveStaticFile = async (url: string, res: ServerResponse) => {
     const filePath = `.${url}`;
-    const file = await fs.readFile(filePath, "utf-8");
+    const file = await fs.readFile(filePath);
 
-    return res.end(file, "utf-8");
+    return res.end(file);
 };
 
 const handleRequest = async (req: IncomingMessage, res: ServerResponse) => {
