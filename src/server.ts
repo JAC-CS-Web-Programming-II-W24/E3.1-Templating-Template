@@ -1,9 +1,13 @@
 import http, { IncomingMessage, ServerResponse } from "http";
 import { promises as fs } from "fs";
+import { registerPartialTemplate } from "./view";
 import { routes } from "./router";
 
 const hostname = "127.0.0.1";
 const port = 3000;
+
+registerPartialTemplate("Header", "src/partials/Header.hbs");
+registerPartialTemplate("Footer", "src/partials/Footer.hbs");
 
 /**
  * A static file is a file that the client requests for
@@ -30,21 +34,14 @@ const handleRequest = async (req: IncomingMessage, res: ServerResponse) => {
         return res.end();
     }
 
-    /**
-     * If the request is for a static file, serve it.
-     * A static file is a file the ends with a valid file extension.
-     * @example /index.html
-     */
     if (req.url?.match(/.*\..*/)) {
         return await serveStaticFile(req.url, res);
     }
 
-    // Determine the route handler to use.
     let url = req.url?.startsWith("/pokemon/") ? "/pokemon/:id" : req.url;
     url = url?.split("?")[0]; // Get rid of query parameters.
-    const handler = routes[req.method!][url!];
+    const handler = routes[req.method ?? "GET"][url ?? "/"];
 
-    // If the route handler exists, call it.
     if (handler) {
         await handler(req, res);
     } else {
@@ -55,9 +52,6 @@ const handleRequest = async (req: IncomingMessage, res: ServerResponse) => {
 
 const server = http.createServer(handleRequest);
 
-// https://developer.mozilla.org/en-US/docs/Glossary/IIFE
-(async () => {
-    await server.listen(port, hostname, () => {
-        console.log(`Server running at http://${hostname}:${port}/`);
-    });
-})();
+server.listen(port, hostname, () => {
+    console.log(`Server running at http://${hostname}:${port}/`);
+});
